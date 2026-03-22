@@ -22,7 +22,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2022.1
+set scripts_vivado_version 2025.2
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -65,14 +65,14 @@ source ./rm_tcl/fir_compiler.tcl
 source ./rm_tcl/aes128encdec.tcl
 source ./rm_tcl/aes192encdec.tcl
 source ./rm_tcl/dpu_512.tcl
-source ./rm_tcl/pp_pipeline.tcl
+#source ./rm_tcl/pp_pipeline.tcl
 
 cr_bd_AES128 "" AES128
 cr_bd_FFT_4channel "" FFT_4channel
 cr_bd_FIR_compiler "" FIR_compiler
 cr_bd_AES192 "" AES192
 cr_bd_DPU_512 "" DPU_512
-cr_bd_pp_pipeline "" pp_pipeline 
+#cr_bd_pp_pipeline "" pp_pipeline 
 
 # CHANGE DESIGN NAME HERE
 variable design_name
@@ -153,7 +153,7 @@ if { $bCheckIPs == 1 } {
 xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:xlslice:1.0\
-xilinx.com:ip:zynq_ultra_ps_e:3.4\
+xilinx.com:ip:zynq_ultra_ps_e:3.5\
 xilinx.com:ip:vcu:1.2\
 xilinx.com:ip:proc_sys_reset:5.0\
 xilinx.com:ip:util_ds_buf:2.2\
@@ -188,7 +188,7 @@ xilinx.com:ip:util_vector_logic:2.0\
 ##################################################################
 set bCheckSources 1
 set list_bdc_active "AES192"
-set list_bdc_dfx "AES128, FIR_compiler, DPU_512, FFT_4channel, pp_pipeline"
+set list_bdc_dfx "AES128, FIR_compiler, DPU_512, FFT_4channel"
 
 array set map_bdc_missing {}
 set map_bdc_missing(ACTIVE) ""
@@ -202,7 +202,6 @@ AES128 \
 FFT_4channel \
 FIR_compiler \
 DPU_512 \
-pp_pipeline \
 "
 
    common::send_gid_msg -ssname BD::TCL -id 2056 -severity "INFO" "Checking if the following sources for block design container exist in the project: $list_check_srcs .\n\n"
@@ -1082,7 +1081,7 @@ proc create_hier_cell_static_shell { parentCell nameHier } {
  ] $xlslice_0
 
   # Create instance: zynq_ultra_ps_e_0, and set properties
-  set zynq_ultra_ps_e_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.4 zynq_ultra_ps_e_0 ]
+  set zynq_ultra_ps_e_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.5 zynq_ultra_ps_e_0 ]
   set_property -dict [ list \
    CONFIG.CAN0_BOARD_INTERFACE {custom} \
    CONFIG.CAN1_BOARD_INTERFACE {custom} \
@@ -2767,8 +2766,8 @@ proc create_root_design { parentCell } {
    CONFIG.ACTIVE_SIM_BD {AES192.bd} \
    CONFIG.ACTIVE_SYNTH_BD {AES192.bd} \
    CONFIG.ENABLE_DFX {true} \
-   CONFIG.LIST_SIM_BD {AES128.bd:FIR_compiler.bd:FFT_4channel.bd:AES192.bd:DPU_512.bd:pp_pipeline.bd} \
-   CONFIG.LIST_SYNTH_BD {AES128.bd:FIR_compiler.bd:FFT_4channel.bd:AES192.bd:DPU_512.bd:pp_pipeline.bd} \
+   CONFIG.LIST_SIM_BD {AES128.bd:FIR_compiler.bd:FFT_4channel.bd:AES192.bd:DPU_512.bd} \
+   CONFIG.LIST_SYNTH_BD {AES128.bd:FIR_compiler.bd:FFT_4channel.bd:AES192.bd:DPU_512.bd} \
    CONFIG.LOCK_PROPAGATE {true} \
  ] $RP_0
   set_property APERTURES {{0x0 2G} {0xC000_0000 512M} {0xFF00_0000 16M} {0x2_0000_0000 1G} {0x2_8000_0000 1G} {0x8_0000_0000 32G}} [get_bd_intf_pins /RP_0/M_AXI_GMEM]
@@ -2780,8 +2779,8 @@ proc create_root_design { parentCell } {
    CONFIG.ACTIVE_SIM_BD {AES192.bd} \
    CONFIG.ACTIVE_SYNTH_BD {AES192.bd} \
    CONFIG.ENABLE_DFX {true} \
-   CONFIG.LIST_SIM_BD {AES128.bd:FIR_compiler.bd:FFT_4channel.bd:AES192.bd:DPU_512.bd:pp_pipeline.bd} \
-   CONFIG.LIST_SYNTH_BD {AES128.bd:FIR_compiler.bd:FFT_4channel.bd:AES192.bd:DPU_512.bd:pp_pipeline.bd} \
+   CONFIG.LIST_SIM_BD {AES128.bd:FIR_compiler.bd:FFT_4channel.bd:AES192.bd:DPU_512.bd} \
+   CONFIG.LIST_SYNTH_BD {AES128.bd:FIR_compiler.bd:FFT_4channel.bd:AES192.bd:DPU_512.bd} \
    CONFIG.LOCK_PROPAGATE {true} \
  ] $RP_1
   set_property APERTURES {{0x0 2G} {0xC000_0000 512M} {0xFF00_0000 16M} {0x2_0000_0000 1G} {0x2_8000_0000 1G} {0x8_0000_0000 32G}} [get_bd_intf_pins /RP_1/M_AXI_GMEM]
@@ -2877,7 +2876,7 @@ setup_pr_configurations
 create_pr_configuration -name config_7 -partitions { }  -greyboxes [list opendfx_shell_i/RP_0 opendfx_shell_i/RP_1 ]
 create_run child_0_impl_1 -parent_run impl_1 -flow {Vivado Implementation 2022} -pr_config config_7
 
-launch_runs impl_1 -to_step write_bitstream -jobs 16
+launch_runs impl_1 -to_step write_bitstream -jobs 6
 wait_on_run impl_1
 write_hw_platform -fixed -include_bit -force -file ./project_1/opendfx_shell_wrapper.xsa
 launch_runs child_0_impl_1 child_1_impl_1 child_2_impl_1 child_3_impl_1 child_4_impl_1 child_5_impl_1 -to_step write_bitstream -jobs 16
@@ -2886,5 +2885,5 @@ wait_on_run child_1_impl_1
 wait_on_run child_2_impl_1
 wait_on_run child_3_impl_1
 wait_on_run child_4_impl_1
-wait_on_run child_5_impl_1
+#wait_on_run child_5_impl_1
 open_run impl_1
